@@ -8,9 +8,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_BUILD_TYPE Debug)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
-find_package(Torch REQUIRED)
-
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GAZEBO_CXX_FLAGS}")
 find_package(gazebo REQUIRED)
 
@@ -39,65 +36,10 @@ catkin_package(
   rospy
 )
 
-link_directories(/usr/local/lib)
-include_directories(${YAML_CPP_INCLUDE_DIR})
-
-# Unitree A1
-include_directories(library/unitree_legged_sdk_3.2/include)
-link_directories(library/unitree_legged_sdk_3.2/lib)
-set(UNITREE_A1_LIBS -pthread unitree_legged_sdk_amd64 lcm)
-
-# Unitree Go2
-include_directories(library/unitree_sdk2/include)
-link_directories(library/unitree_sdk2/lib/x86_64)
-include_directories(library/unitree_sdk2/thirdparty/include)
-include_directories(library/unitree_sdk2/thirdparty/include/ddscxx)
-link_directories(library/unitree_sdk2/thirdparty/lib/x86_64)
-set(UNITREE_GO2_LIBS -pthread unitree_sdk2 ddsc ddscxx)
-
-include_directories(
-  include
-  ${catkin_INCLUDE_DIRS}
-  library/matplotlibcpp
-  library/observation_buffer
-  library/rl_sdk
-  library/loop
-)
-
-add_library(rl_sdk library/rl_sdk/rl_sdk.cpp)
-target_link_libraries(rl_sdk "${TORCH_LIBRARIES}" Python3::Python Python3::Module TBB::tbb)
-set_property(TARGET rl_sdk PROPERTY CXX_STANDARD 14)
-find_package(Python3 COMPONENTS NumPy)
-if(Python3_NumPy_FOUND)
-  target_link_libraries(rl_sdk Python3::NumPy)
-else()
-  target_compile_definitions(rl_sdk WITHOUT_NUMPY)
-endif()
-
-add_library(observation_buffer library/observation_buffer/observation_buffer.cpp)
-target_link_libraries(observation_buffer "${TORCH_LIBRARIES}")
-set_property(TARGET observation_buffer PROPERTY CXX_STANDARD 14)
-
-add_executable(rl_sim src/rl_sim.cpp )
-target_link_libraries(rl_sim
-  ${catkin_LIBRARIES} -pthread
-  rl_sdk observation_buffer yaml-cpp
-)
-
-add_executable(rl_real_a1 src/rl_real_a1.cpp )
-target_link_libraries(rl_real_a1
-  ${catkin_LIBRARIES} ${UNITREE_A1_LIBS}
-  rl_sdk observation_buffer yaml-cpp
-)
-
-add_executable(rl_real_go2 src/rl_real_go2.cpp )
-target_link_libraries(rl_real_go2
-  ${catkin_LIBRARIES} ${UNITREE_GO2_LIBS}
-  rl_sdk observation_buffer yaml-cpp
-)
 
 catkin_install_python(PROGRAMS
   scripts/rl_sim.py
+  scripts/rl_go2_himloco_real.py
   scripts/actuator_net.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

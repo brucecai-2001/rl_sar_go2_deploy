@@ -2,6 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import sys
+sys.path.append('/home/cxy/anaconda3/envs/unitree/lib/python3.8/site-packages')
 import os
 import torch
 import threading
@@ -13,8 +14,11 @@ from robot_msgs.msg import MotorState, MotorCommand
 from gazebo_msgs.srv import SetModelState, SetModelStateRequest
 from std_srvs.srv import Empty
 
-path = os.path.abspath(".")
-sys.path.insert(0, path + "/src/rl_sar/scripts")
+# Add the scripts directory to sys.path
+script_dir = os.path.dirname(os.path.abspath(__file__))
+if script_dir not in sys.path:
+    sys.path.append(script_dir)
+
 from rl_sdk import *
 from observation_buffer import *
 
